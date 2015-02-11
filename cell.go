@@ -90,7 +90,13 @@ func (c *Cell) Float() (float64, error) {
 	return f, nil
 }
 
-// Set a 64-bit integer
+// Set integer
+func (c *Cell) SetInt(n int) {
+	c.Value = fmt.Sprintf("%d", n)
+	c.numFmt = "0"
+	c.formula = ""
+	c.cellType = CellTypeNumeric
+}
 func (c *Cell) SetInt64(n int64) {
 	c.Value = fmt.Sprintf("%d", n)
 	c.numFmt = "0"
@@ -107,17 +113,7 @@ func (c *Cell) Int64() (int64, error) {
 	return f, nil
 }
 
-// Set integer
-func (c *Cell) SetInt(n int) {
-	c.Value = fmt.Sprintf("%d", n)
-	c.numFmt = "0"
-	c.formula = ""
-	c.cellType = CellTypeNumeric
-}
-
 // Returns the value of cell as integer
-// Has max 53 bits of precision
-// See: float64(int64(math.MaxInt))
 func (c *Cell) Int() (int, error) {
 	f, err := strconv.ParseFloat(c.Value, 64)
 	if err != nil {
