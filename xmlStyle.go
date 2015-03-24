@@ -294,7 +294,7 @@ func (styles *xlsxStyleSheet) Marshal() (result string, err error) {
 	var outputBorderMap map[int]int = make(map[int]int)
 
 	result = xml.Header
-	result += `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">`
+	result += `<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" xmlns:x14ac="http://schemas.microsoft.com/office/spreadsheetml/2009/9/ac" mc:Ignorable="x14ac">`
 
 	xNumFmts, err = styles.NumFmts.Marshal()
 	if err != nil {
@@ -402,7 +402,7 @@ func (fonts *xlsxFonts) Marshal(outputFontMap map[int]int) (result string, err e
 		}
 	}
 	if emittedCount > 0 {
-		result = fmt.Sprintf(`<fonts count="%d">`, fonts.Count)
+		result = fmt.Sprintf(`<fonts count="%d" x14ac:knownFonts="1">`, fonts.Count)
 		result += subparts
 		result += `</fonts>`
 	}
@@ -482,11 +482,11 @@ func (fills *xlsxFills) Marshal(outputFillMap map[int]int) (result string, err e
 			subparts += xfill
 		}
 	}
-	if emittedCount > 0 {
-		result = fmt.Sprintf(`<fills count="%d">`, emittedCount)
+	//if emittedCount > 0 {
+		result = fmt.Sprintf(`<fills count="%d">`, (emittedCount + 2))
 		result += subparts
-		result += `</fills>`
-	}
+		result += `<fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>`
+	//}
 	return
 }
 
@@ -590,11 +590,11 @@ func (borders *xlsxBorders) Marshal(outputBorderMap map[int]int) (result string,
 			subparts += xborder
 		}
 	}
-	if emittedCount > 0 {
-		result += fmt.Sprintf(`<borders count="%d">`, emittedCount)
+	//if emittedCount > 0 {
+		result += fmt.Sprintf(`<borders count="%d">`, emittedCount + 1)
 		result += subparts
-		result += `</borders>`
-	}
+		result += `<border><left/><right/><top/><bottom/><diagonal/></border></borders>`
+	//}
 	return
 }
 
