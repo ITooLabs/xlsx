@@ -29,9 +29,9 @@ type xlsxStyleSheet struct {
 	CellXfs      xlsxCellXfs      `xml:"cellXfs,omitempty"`
 	NumFmts      xlsxNumFmts      `xml:"numFmts,omitempty"`
 
-	styleCache map[int]*Style // `-`
+	styleCache     map[int]*Style     // `-`
 	numFmtRefTable map[int]xlsxNumFmt `xml:"-"`
-	lock       *sync.RWMutex
+	lock           *sync.RWMutex
 }
 
 func newXlsxStyleSheet() *xlsxStyleSheet {
@@ -483,9 +483,9 @@ func (fills *xlsxFills) Marshal(outputFillMap map[int]int) (result string, err e
 		}
 	}
 	//if emittedCount > 0 {
-		result = fmt.Sprintf(`<fills count="%d">`, (emittedCount + 2))
-		result += subparts
-		result += `<fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>`
+	result = fmt.Sprintf(`<fills count="%d">`, (emittedCount + 2))
+	result += subparts
+	result += `<fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>`
 	//}
 	return
 }
@@ -591,9 +591,9 @@ func (borders *xlsxBorders) Marshal(outputBorderMap map[int]int) (result string,
 		}
 	}
 	//if emittedCount > 0 {
-		result += fmt.Sprintf(`<borders count="%d">`, emittedCount + 1)
-		result += subparts
-		result += `<border><left/><right/><top/><bottom/><diagonal/></border></borders>`
+	result += fmt.Sprintf(`<borders count="%d">`, emittedCount+1)
+	result += subparts
+	result += `<border><left/><right/><top/><bottom/><diagonal/></border></borders>`
 	//}
 	return
 }
@@ -707,16 +707,17 @@ func (cellXfs *xlsxCellXfs) Marshal(outputBorderMap, outputFillMap, outputFontMa
 // currently I have not checked it for completeness - it does as much
 // as I need.
 type xlsxXf struct {
-	ApplyAlignment  bool          `xml:"applyAlignment,attr"`
-	ApplyBorder     bool          `xml:"applyBorder,attr"`
-	ApplyFont       bool          `xml:"applyFont,attr"`
-	ApplyFill       bool          `xml:"applyFill,attr"`
-	ApplyProtection bool          `xml:"applyProtection,attr"`
-	BorderId        int           `xml:"borderId,attr"`
-	FillId          int           `xml:"fillId,attr"`
-	FontId          int           `xml:"fontId,attr"`
-	NumFmtId        int           `xml:"numFmtId,attr"`
-	Alignment       xlsxAlignment `xml:"alignment"`
+	ApplyAlignment    bool          `xml:"applyAlignment,attr"`
+	ApplyBorder       bool          `xml:"applyBorder,attr"`
+	ApplyFont         bool          `xml:"applyFont,attr"`
+	ApplyFill         bool          `xml:"applyFill,attr"`
+	ApplyProtection   bool          `xml:"applyProtection,attr"`
+	ApplyNumberFormat bool          `xml:"applyNumberFormat,attr"`
+	BorderId          int           `xml:"borderId,attr"`
+	FillId            int           `xml:"fillId,attr"`
+	FontId            int           `xml:"fontId,attr"`
+	NumFmtId          int           `xml:"numFmtId,attr"`
+	Alignment         xlsxAlignment `xml:"alignment"`
 }
 
 func (xf *xlsxXf) Equals(other xlsxXf) bool {
@@ -725,6 +726,7 @@ func (xf *xlsxXf) Equals(other xlsxXf) bool {
 		xf.ApplyFont == other.ApplyFont &&
 		xf.ApplyFill == other.ApplyFill &&
 		xf.ApplyProtection == other.ApplyProtection &&
+		xf.ApplyNumberFormat == other.ApplyNumberFormat &&
 		xf.BorderId == other.BorderId &&
 		xf.FillId == other.FillId &&
 		xf.FontId == other.FontId &&
@@ -734,7 +736,7 @@ func (xf *xlsxXf) Equals(other xlsxXf) bool {
 
 func (xf *xlsxXf) Marshal(outputBorderMap, outputFillMap, outputFontMap map[int]int) (result string, err error) {
 	var xAlignment string
-	result = fmt.Sprintf(`<xf applyAlignment="%b" applyBorder="%b" applyFont="%b" applyFill="%b" applyProtection="%b" borderId="%d" fillId="%d" fontId="%d" numFmtId="%d">`, bool2Int(xf.ApplyAlignment), bool2Int(xf.ApplyBorder), bool2Int(xf.ApplyFont), bool2Int(xf.ApplyFill), bool2Int(xf.ApplyProtection), outputBorderMap[xf.BorderId], outputFillMap[xf.FillId], outputFontMap[xf.FontId], xf.NumFmtId)
+	result = fmt.Sprintf(`<xf applyAlignment="%b" applyBorder="%b" applyFont="%b" applyFill="%b" applyNumberFormat="%b" applyProtection="%b" borderId="%d" fillId="%d" fontId="%d" numFmtId="%d">`, bool2Int(xf.ApplyAlignment), bool2Int(xf.ApplyBorder), bool2Int(xf.ApplyFont), bool2Int(xf.ApplyFill), bool2Int(xf.ApplyNumberFormat), bool2Int(xf.ApplyProtection), outputBorderMap[xf.BorderId], outputFillMap[xf.FillId], outputFontMap[xf.FontId], xf.NumFmtId)
 	xAlignment, err = xf.Alignment.Marshal()
 	if err != nil {
 		return

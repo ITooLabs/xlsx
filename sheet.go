@@ -8,13 +8,13 @@ import (
 // Sheet is a high level structure intended to provide user access to
 // the contents of a particular sheet within an XLSX file.
 type Sheet struct {
-	Name     string
-	File     *File
-	Rows     []*Row
-	Cols     []*Col
-	MaxRow   int
-	MaxCol   int
-	Hidden   bool
+	Name   string
+	File   *File
+	Rows   []*Row
+	Cols   []*Col
+	MaxRow int
+	MaxCol int
+	Hidden bool
 }
 
 // Add a new Row to a Sheet
@@ -29,13 +29,15 @@ func (s *Sheet) AddRow() *Row {
 
 // Make sure we always have as many Cols as we do cells.
 func (s *Sheet) maybeAddCol(cellCount int, colWidth float64) {
-	if colWidth <= 0 { colWidth = ColWidth }
+	if colWidth <= 0 {
+		colWidth = ColWidth
+	}
 	if cellCount > s.MaxCol {
 		col := &Col{
-			Min:       cellCount,
-			Max:       cellCount,
-			Width:     colWidth,
-			Cw: 	   1}
+			Min:   cellCount,
+			Max:   cellCount,
+			Width: colWidth,
+			Cw:    1}
 		s.Cols = append(s.Cols, col)
 		s.MaxCol = cellCount
 	}
@@ -60,10 +62,20 @@ func (sh *Sheet) Cell(row, col int) *Cell {
 
 // Dump sheet to it's XML representation, intended for internal use only
 func (s *Sheet) makeXLSXSheet(refTable *RefTable, styles *xlsxStyleSheet) *xlsxWorksheet {
+	var (
+		ok       bool
+		numFmtId int
+	)
 	worksheet := newXlsxWorksheet()
 	xSheet := xlsxSheetData{}
 	maxRow := 0
 	maxCell := 0
+	numFormats := make(map[string]int, 48)
+	for numFmtId = 1; numFmtId < 50; numFmtId++ {
+		if numFormatCode := getBuiltinNumberFormat(numFmtId); numFormatCode != "" {
+			numFormats[numFormatCode] = numFmtId
+		}
+	}
 	for r, row := range s.Rows {
 		if r > maxRow {
 			maxRow = r
@@ -73,10 +85,18 @@ func (s *Sheet) makeXLSXSheet(refTable *RefTable, styles *xlsxStyleSheet) *xlsxW
 		for c, cell := range row.Cells {
 			style := cell.GetStyle()
 			xNumFmt, xFont, xFill, xBorder, xCellStyleXf, xCellXf := style.makeXLSXStyleElements()
+			styles.addNumFmt(xNumFmt)
+			if cell.numFmt != "" {
+				numFmtId, ok = numFormats[cell.numFmt]
+				if ok {
+					xNumFmt.NumFmtId = numFmtId
+					xNumFmt.FormatCode = cell.numFmt
+				}
+			}
+			style.ApplyNumberFormat = cell.cellType == CellTypeNumeric
 			fontId := styles.addFont(xFont)
 			fillId := styles.addFill(xFill)
 			borderId := styles.addBorder(xBorder)
-			styles.addNumFmt(xNumFmt)
 			xCellStyleXf.FontId = fontId
 			xCellStyleXf.FillId = fillId
 			xCellStyleXf.BorderId = borderId
@@ -126,9 +146,9 @@ func (s *Sheet) makeXLSXSheet(refTable *RefTable, styles *xlsxStyleSheet) *xlsxW
 		}
 		worksheet.Cols.Col = append(worksheet.Cols.Col,
 			xlsxCol{Min: col.Min,
-				Max:         col.Max,
-				Width:       col.Width,
-				Cw: 		 1,
+				Max:   col.Max,
+				Width: col.Width,
+				Cw:    1,
 			})
 	}
 	worksheet.SheetData = xSheet
